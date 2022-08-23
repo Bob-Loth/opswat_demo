@@ -1,7 +1,7 @@
-use sha2::{Sha256, Digest};
 use sha2::digest::Output;
+use sha2::{Digest, Sha256};
 use std::fmt::Write;
-pub(crate) fn sha256_from_bytes(bytes: &[u8]) -> Result<String,std::fmt::Error>  {
+pub(crate) fn sha256_from_bytes(bytes: &[u8]) -> Result<String, std::fmt::Error> {
     let mut hasher = Sha256::new();
     hasher.update(bytes);
     let val = hasher.finalize(); //a byte vector.
