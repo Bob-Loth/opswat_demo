@@ -11,7 +11,8 @@ mod network;
 fn main() -> Result<(), Box<dyn std::error::Error + 'static>> {
     //1. Calculate the hash of a given file (i.e. samplefile.txt)
     let contents = fs::read(Path::new("tests/resources/test.txt"))?;
-    let hash = sha256_from_bytes(&contents);
+    let hash = sha256_from_bytes(&contents)?;
+    println!("{}",hash);
     //2. Perform a hash lookup against metadefender.opswat.com and see if there are
     //previously cached results for the file
     //3. If results are found, skip to step 6
