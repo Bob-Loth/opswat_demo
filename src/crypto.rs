@@ -1,4 +1,3 @@
-use sha2::digest::Output;
 use sha2::{Digest, Sha256};
 use std::fmt::Write;
 pub(crate) fn sha256_from_bytes(bytes: &[u8]) -> Result<String, std::fmt::Error> {
