@@ -34,11 +34,7 @@ pub struct FetchAnalysisResponse {
 //6. Display results in format below (SAMPLE OUTPUT)
 impl Display for FetchAnalysisResponse {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        writeln!(
-            f,
-            "overall status: {}",
-            self.scan_results.scan_all_result_a
-        )?;
+        writeln!(f, "overall status: {}", self.scan_results.scan_all_result_a)?;
         for (name, entry) in &self.scan_results.scan_details {
             writeln!(f, "engine: {}", name)?;
             writeln!(f, "threat_found: {}", entry.threat_found)?;
@@ -77,6 +73,7 @@ impl KeyedClient {
             })
         } else {
             eprintln!(
+                //secret management service might be more appropriate for production, but as a test this should suffice
                 "Environment variable not found. Use the environment variable \"OPSWAT_API_KEY\""
             );
             std::process::exit(2);
@@ -122,7 +119,7 @@ impl KeyedClient {
                 "unexpected status code returned from POST analyze file: {:?}\n",
                 resp
             );
-            eprintln!("{:#?}", resp.text().unwrap());
+
             std::process::exit(1);
         } else {
             //return type is known from the function's return type,
@@ -151,9 +148,7 @@ impl KeyedClient {
             }
             StatusCode::OK => {
                 let text = resp.text()?;
-                eprintln!("{:#?}", &text);
                 let json = serde_json::from_str(&text)?;
-                eprintln!("{:#?}", &json);
                 Ok(json)
             }
             _ => panic!(), //should be unreachable, given good implementation.

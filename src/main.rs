@@ -1,6 +1,8 @@
 use crate::crypto::sha256_from_bytes;
 use crate::network::KeyedClient;
+use std::env::args;
 use std::fs;
+use std::io::{stdout, Write};
 use std::path::Path;
 use std::thread::sleep;
 use std::time::Duration;
@@ -9,11 +11,12 @@ mod crypto;
 mod network;
 
 fn main() -> Result<(), Box<dyn std::error::Error + 'static>> {
+    let mut stdout = stdout();
+    let args: Vec<String> = args().collect();
     //1. Calculate the hash of a given file (i.e. samplefile.txt)
-    let path = Path::new("tests/resources/test.txt");
+    let path = Path::new(&args[1]);
     let contents = fs::read(path)?;
     let hash = sha256_from_bytes(&contents)?;
-    println!("{}", hash);
     //2. Perform a hash lookup against metadefender.opswat.com and see if there are
     //previously cached results for the file
 
@@ -32,11 +35,17 @@ fn main() -> Result<(), Box<dyn std::error::Error + 'static>> {
     let time_to_next_fetch = Duration::new(5, 0);
     while let resp = client.fetch_analysis(&data_id)? {
         if resp.scan_results.progress_percentage >= 99 {
-            println!("{}", resp);
+            //not sure why, but API occasionally hangs at 99 with all engines reporting results.
             //6. Display results in format below (SAMPLE OUTPUT)
+            println!("{}", resp);
             return Ok(());
         }
-        println!("{}", resp.scan_results.progress_percentage);
+        stdout.flush().unwrap();
+        print!(
+            "\rstill in progress: {}%",
+            resp.scan_results.progress_percentage
+        );
+
         sleep(time_to_next_fetch);
     }
     Ok(())
