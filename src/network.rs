@@ -20,12 +20,6 @@ pub struct AnalyzeFileResponse {
     pub queue_priority: String,
 }
 
-//or just the fields we care about
-#[derive(Deserialize, Debug)]
-pub struct UploadFileResponse {
-    pub data_id: String,
-}
-
 #[derive(Deserialize, Debug)]
 pub struct FetchAnalysisResponse {
     pub data_id: String,
@@ -81,7 +75,7 @@ impl KeyedClient {
     }
 
     //returns internal reqwest errors, or an option indicating if the hash has an associated data_id
-    pub fn query_hash(&self, hash: &str) -> Result<Option<UploadFileResponse>, reqwest::Error> {
+    pub fn query_hash(&self, hash: &str) -> Result<Option<FetchAnalysisResponse>, reqwest::Error> {
         let resp = self.get_hash_info(hash)?;
         match resp.status() {
             StatusCode::OK => Ok(Some(resp.json()?)),

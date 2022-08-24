@@ -23,7 +23,10 @@ fn main() -> Result<(), Box<dyn std::error::Error + 'static>> {
     let client = KeyedClient::new()?;
     let data_id = match client.query_hash(&hash).unwrap() {
         //3. If results are found, skip to step 6
-        Some(resp_body) => resp_body.data_id,
+        Some(resp_body) => {
+            println!("{}",resp_body);
+            return Ok(());
+        },
         //4. If results are not found, upload the file and receive a "data_id"
         None => {
             let resp_body = client.upload_file(path)?;
@@ -45,7 +48,6 @@ fn main() -> Result<(), Box<dyn std::error::Error + 'static>> {
             "\rstill in progress: {}%",
             resp.scan_results.progress_percentage
         );
-
         sleep(time_to_next_fetch);
     }
     Ok(())
