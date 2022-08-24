@@ -2,6 +2,8 @@ use crate::crypto::sha256_from_bytes;
 use crate::network::KeyedClient;
 use std::fs;
 use std::path::Path;
+use std::thread::sleep;
+use std::time::Duration;
 
 mod crypto;
 mod network;
@@ -16,18 +18,26 @@ fn main() -> Result<(), Box<dyn std::error::Error + 'static>> {
     //previously cached results for the file
 
     let client = KeyedClient::new()?;
-    if client.hash_exists(&hash)? {
-        //print out response
-    } else {
-        //a valid not found response
-        let json_data = client.upload_file(path)?;
-        println!("{:#?}", json_data);
-    }
-
-    //3. If results are found, skip to step 6
-    //4. If results are not found, upload the file and receive a "data_id"
+    let data_id = match client.query_hash(&hash).unwrap() {
+        //3. If results are found, skip to step 6
+        Some(resp_body) => resp_body.data_id,
+        //4. If results are not found, upload the file and receive a "data_id"
+        None => {
+            let resp_body = client.upload_file(path)?;
+            resp_body.data_id
+        }
+    };
     //5. Repeatedly pull on the "data_id" to retrieve results
-    //6. Display results in format below (SAMPLE OUTPUT)
-    //7. You should also have some basic error handling for common HTTP results
+    //very simple sleep. A regression or rolling average could be a more sophisticated approach.
+    let time_to_next_fetch = Duration::new(5, 0);
+    while let resp = client.fetch_analysis(&data_id)? {
+        if resp.scan_results.progress_percentage >= 99 {
+            println!("{}", resp);
+            //6. Display results in format below (SAMPLE OUTPUT)
+            return Ok(());
+        }
+        println!("{}", resp.scan_results.progress_percentage);
+        sleep(time_to_next_fetch);
+    }
     Ok(())
 }
